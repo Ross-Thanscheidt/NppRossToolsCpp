@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <shlwapi.h>
+#include <string>
 
 const TCHAR sectionName[] = TEXT("NppRossToolsCpp");
 const TCHAR keyName[] = TEXT("doCloseTag");
@@ -97,19 +98,70 @@ void commandMenuCleanUp()
 
 void RemoveTrailingSpacesCommand()
 {
-    // Open a new document
-    ::SendMessage(nppData._nppHandle, NPPM_MENUCOMMAND, 0, IDM_FILE_NEW);
-
     // Get the current scintilla
     int which = -1;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
     if (which == -1)
         return;
-    HWND curScintilla = (which == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
+    HWND curScintilla = (which == 0) ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 
-    // Say hello now :
-    // Scintilla control has no Unicode mode, so we use (char *) here
-    ::SendMessage(curScintilla, SCI_SETTEXT, 0, (LPARAM)"Hello, Notepad++!");
+    int lineCount = (int)::SendMessage(curScintilla, SCI_GETLINECOUNT, 0, 0);
+
+    if (lineCount > 0)
+    {
+        ::SendMessage(curScintilla, SCI_BEGINUNDOACTION, 0, 0);
+
+        //size_t lineLen;
+        std::string lineText = "";
+        Sci_Position startPos;
+        Sci_Position endPos;
+
+        for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
+        {
+            ::SendMessage(curScintilla, SCI_GOTOLINE, lineNumber, 0);
+
+            //startPos = (Sci_Position)::SendMessage(curScintilla, SCI_POSITIONFROMLINE, lineNumber, 0);
+            //endPos = (Sci_Position)::SendMessage(curScintilla, SCI_GETLINEENDPOSITION, lineNumber, 0);
+
+            //lineLen = endPos - startPos + 1;
+            //lineText.resize(lineLen, 'r');
+            //::SendMessage(curScintilla, SCI_SETTARGETRANGE, startPos, startPos);
+            //::SendMessage(curScintilla, SCI_GETTARGETTEXT, 0, reinterpret_cast<LPARAM>(lineText.data()));
+            //lineText.push_back('x');
+            //::SendMessage(curScintilla, SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(lineText.data()));
+
+            // string line = editor.GetLine(lineNumber)
+            //char* textPtr = new char[10000];
+            ::SendMessage(curScintilla, SCI_GETLINE, lineNumber, reinterpret_cast<LPARAM>(lineText.data()));
+
+            // bool endHasLF = line.Length > 0 && line[line.Length - 1] == '\n'
+            // string newLine = line.TrimEnd();
+
+            // if (endHasLF)
+            // {
+            //   newLine = string.Concat(newLine, '\n')
+            // }
+
+            // if (!string.Equals(line, newLine))
+            // {
+            //   editor.SelectCurrentLine()
+            startPos = (Sci_Position)::SendMessage(curScintilla, SCI_POSITIONFROMLINE, lineNumber, 0);
+            endPos = (Sci_Position)::SendMessage(curScintilla, SCI_POSITIONFROMLINE, static_cast<WPARAM>(lineNumber + 1), 0);
+            ::SendMessage(curScintilla, SCI_SETSELECTION, startPos, endPos);
+            //   editor.ReplaceSel(newLine)
+            lineText.push_back('q');
+            ::SendMessage(curScintilla, SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(lineText.data()));
+            // }
+        }
+
+        // Scintilla control has no Unicode mode, so we use (char *) here
+        //::SendMessage(curScintilla, SCI_SETTEXT, 0, (LPARAM)"Hello, Notepad++!");
+
+        int line = 0;
+        ::SendMessage(curScintilla, SCI_GOTOLINE, line, 0);
+
+        ::SendMessage(curScintilla, SCI_ENDUNDOACTION, 0, 0);
+    }
 }
 
 void UpdateAgesCommand()
