@@ -25,6 +25,7 @@
 #include <time.h>
 #include <shlwapi.h>
 #include <string>
+#include <regex>
 
 const TCHAR sectionName[] = TEXT("NppRossToolsCpp");
 const TCHAR keyName[] = TEXT("doCloseTag");
@@ -128,7 +129,7 @@ void RemoveTrailingSpacesCommand()
             lineText.resize(endPos - startPos);
             ::SendMessage(curScintilla, SCI_SETTARGETRANGE, startPos, endPos);
             ::SendMessage(curScintilla, SCI_GETTARGETTEXT, 0, reinterpret_cast<LPARAM>(lineText.data()));
-            lineText.erase(std::find_if(lineText.rbegin(), lineText.rend(), [](char c) { return c != ' '; }).base(), lineText.end());
+            lineText = std::regex_replace(lineText, std::regex(" +$|(\\S+)"), "$1");
             ::SendMessage(curScintilla, SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(lineText.data()));
         }
 
