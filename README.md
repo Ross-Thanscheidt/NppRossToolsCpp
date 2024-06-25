@@ -1,6 +1,6 @@
 # Ross Tools Plugin for Notepad++
 
-## Tools
+## Ross Tools
 
 - **Remove Trailing Spaces**
 
