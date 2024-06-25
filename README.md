@@ -58,10 +58,16 @@
   
 ## Development Environment
 
-  | Notepad++ | v8.6.7 (64-bit) |
+  | Application | Version |
+  | :--- | :--- |
   | Visual Studio 2022 Preview | v17.11 Preview 2.1 |
+  | Notepad++ | v8.6.7 (64-bit) |
 
-  Building the project in Visual Studio should add (or update) `NppRossToolsCpp\NppRossToolsCpp.dll` under `C:\Program Files\Notepad++\plugins`, which will add `Ross Tools` under `Plugins` when you run Notepad++.  
+- Build the project in Visual Studio to create `NppRossToolsCpp.dll` 
+
+- Copy `NppRossToolsCpp.dll` to `C:\Program Files\Notepad++\plugins\NppRossToolsCpp`  
+
+This will add `Ross Tools` under the `Plugins` menu when you run Notepad++
 
 ## References
 
