@@ -19,24 +19,16 @@
 #define PLUGINDEFINITION_H
 
 //
-// All difinitions of plugin interface
+// All definitions of plugin interface
 //
 #include "PluginInterface.h"
 
-//-------------------------------------//
-//-- STEP 1. DEFINE YOUR PLUGIN NAME --//
-//-------------------------------------//
-// Here define your plugin name
-//
-const TCHAR NPP_PLUGIN_NAME[] = TEXT("Notepad++ plugin demo");
+const TCHAR NPP_PLUGIN_NAME[] = TEXT("Ross Tools (C++)");
 
-//-----------------------------------------------//
-//-- STEP 2. DEFINE YOUR PLUGIN COMMAND NUMBER --//
-//-----------------------------------------------//
 //
 // Here define the number of your plugin commands
 //
-const int nbFunc = 19;
+const int nbFunc = 6;
 
 
 //
@@ -70,24 +62,10 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 //
 // Your plugin command functions
 //
-void hello();
-void helloFX();
-void WhatIsNpp();
-void insertDateTime(bool format);
-void insertShortDateTime();
-void insertLongDateTime();
-void insertCurrentPath(int which);
-void insertCurrentFullPath();
-void insertCurrentFileName();
-void insertCurrentDirectory();
-void insertHtmlCloseTag();
-void getFileNamesDemo();
-void getSessionFileNamesDemo();
-void saveCurrentSessionDemo();
-void DockableDlgDemo();
-void goToPluginCommunicationGuide();
-void goToPluginDemoRepo();
-
-
+void RemoveTrailingSpacesCommand();
+void UpdateAgesCommand();
+void UpdateLineBalancesCommand();
+void GoToPluginCommunicationGuide();
+void GoToPluginRepo();
 
 #endif //PLUGINDEFINITION_H
