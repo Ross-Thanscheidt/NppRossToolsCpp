@@ -67,7 +67,7 @@
 
 - Copy `NppRossToolsCpp.dll` to `C:\Program Files\Notepad++\plugins\NppRossToolsCpp`  
 
-This will add `Ross Tools` under the `Plugins` menu when you run Notepad++
+This will add `Ross Tools` to the `Plugins` menu when you run Notepad++
 
 ## References
 
