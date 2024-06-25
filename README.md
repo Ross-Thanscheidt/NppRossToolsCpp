@@ -1,4 +1,4 @@
-# NppRossToolsCpp - A Notepad++ Plugin written in C++
+# Ross Tools Plugin for Notepad++
 
 ## Tools
 
@@ -58,8 +58,8 @@
   
 ## Development Environment
 
-  Notepad++ - v8.6.7 (64-bit)  
-  Visual Studio 2022 Preview - v17.11 Preview 2.1  
+  | Notepad++ | v8.6.7 (64-bit) |
+  | Visual Studio 2022 Preview | v17.11 Preview 2.1 |
 
   Building the project in Visual Studio should add (or update) `NppRossToolsCpp\NppRossToolsCpp.dll` under `C:\Program Files\Notepad++\plugins`, which will add `Ross Tools` under `Plugins` when you run Notepad++.  
 
