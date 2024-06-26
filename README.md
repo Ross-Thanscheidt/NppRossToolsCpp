@@ -35,7 +35,9 @@
 - **Update Line Balances**
 
   This will update the balance on each transaction line in the current document.
-  
+
+  It will also trim all spaces at the end of every line.
+
   For example, if you had a document like this:
   
   ```
