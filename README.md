@@ -70,8 +70,17 @@
 
 This will add `Ross Tools` to the `Plugins` menu when you run Notepad++
 
+## Disclaimer
+
+  These tools will not likely be useful to anyone besides myself, which is why I called it Ross Tools, but I have it as a [public repository](https://github.com/Ross-Thanscheidt/NppRossToolsCSharp) in case it helps anyone else with developing their own Notepad++ plugins.
+
+  Originally I created this plugin using [C#](https://github.com/Ross-Thanscheidt/NppRossToolsCSharp), but I was not able to compile it into an ARM64 DLL and use it in Notepad++ on my Windows 10 VM running in Parallels on my MacBook that has an Apple Silicon M1 processor.
+
+  Any further updates will likely be done in this [C++ version](https://github.com/Ross-Thanscheidt/NppRossToolsCpp) and not in the [C# version](https://github.com/Ross-Thanscheidt/NppRossToolsCSharp).
+
 ## References
 
   https://npp-user-manual.org/docs/plugins/#how-to-develop-a-plugin  
   https://npp-user-manual.org/docs/plugin-communication/  
+  https://github.com/npp-plugins/plugintemplate  
   https://github.com/npp-plugins/plugindemo  
