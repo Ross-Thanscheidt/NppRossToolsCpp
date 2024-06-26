@@ -9,7 +9,8 @@
 - **Update Ages**
 
   This will update every line in the current document that starts with a birthdate (in `MM/dd/yyyy` format) that has `(# in yyyy)` somewhere on the line, which should reflect their age for that year.
-  It will also trim all spaces at the end of every line.
+
+-   It will also trim all spaces at the end of every line.
   
   For example, if you had a document like this:
   
