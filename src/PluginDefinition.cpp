@@ -117,7 +117,54 @@ void RemoveTrailingSpacesCommand()
     {
         Sci_Position startPos;
         Sci_Position endPos;
-        std::string lineText = "";
+        std::string currentLine = "";
+        std::string newLine = "";
+
+        ::SendMessage(curScintilla, SCI_BEGINUNDOACTION, 0, 0);
+
+        for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
+        {
+            startPos = (Sci_Position)::SendMessage(curScintilla, SCI_POSITIONFROMLINE, lineNumber, 0);
+            endPos = (Sci_Position)::SendMessage(curScintilla, SCI_GETLINEENDPOSITION, lineNumber, 0);
+            currentLine.resize(endPos - startPos);
+            ::SendMessage(curScintilla, SCI_SETTARGETRANGE, startPos, endPos);
+            ::SendMessage(curScintilla, SCI_GETTARGETTEXT, 0, reinterpret_cast<LPARAM>(currentLine.data()));
+
+            newLine = std::regex_replace(currentLine, std::regex(" +$|(\\S+)"), "$1");
+
+            if (currentLine.compare(newLine) != 0)
+            {
+                ::SendMessage(curScintilla, SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(newLine.data()));
+            }
+        }
+
+        ::SendMessage(curScintilla, SCI_GOTOLINE, 0, 0);
+        ::SendMessage(curScintilla, SCI_ENDUNDOACTION, 0, 0);
+    }
+}
+
+void UpdateAgesCommand()
+{
+    HWND curScintilla = GetScintillaHandle();
+
+    if (curScintilla == 0)
+        return;
+
+    int lineCount = (int)::SendMessage(curScintilla, SCI_GETLINECOUNT, 0, 0);
+
+    if (lineCount > 0)
+    {
+        Sci_Position startPos;
+        Sci_Position endPos;
+        std::string currentLine = "";
+        std::string newLine = "";
+
+        std::time_t t = std::time(nullptr);
+        int currentYear = 1900 + std::localtime(&t)->tm_year;
+        std::regex regex("^(\\d{2}\\/.{2}\\/(\\d{4}).*)\\(\\d+ in \\d{4}\\)(.*)$");
+        std::smatch match;
+        int age;
+        std::string lineFormat;
 
         ::SendMessage(curScintilla, SCI_BEGINUNDOACTION, 0, 0);
 
@@ -126,26 +173,80 @@ void RemoveTrailingSpacesCommand()
             startPos = (Sci_Position)::SendMessage(curScintilla, SCI_POSITIONFROMLINE, lineNumber, 0);
             endPos = (Sci_Position)::SendMessage(curScintilla, SCI_GETLINEENDPOSITION, lineNumber, 0);
 
-            lineText.resize(endPos - startPos);
+            currentLine.resize(endPos - startPos);
             ::SendMessage(curScintilla, SCI_SETTARGETRANGE, startPos, endPos);
-            ::SendMessage(curScintilla, SCI_GETTARGETTEXT, 0, reinterpret_cast<LPARAM>(lineText.data()));
-            lineText = std::regex_replace(lineText, std::regex(" +$|(\\S+)"), "$1");
-            ::SendMessage(curScintilla, SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(lineText.data()));
+            ::SendMessage(curScintilla, SCI_GETTARGETTEXT, 0, reinterpret_cast<LPARAM>(currentLine.data()));
+
+            if (std::regex_search(currentLine, match, regex))
+            {
+                age = currentYear - std::stoi(match.str(2));
+                lineFormat.assign("$1(").append(std::to_string(age)).append(" in ").append(std::to_string(currentYear)).append(")$3");
+                newLine = std::regex_replace(currentLine, regex, lineFormat);
+                ::SendMessage(curScintilla, SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(newLine.data()));
+            }
         }
 
-        int line = 0;
-        ::SendMessage(curScintilla, SCI_GOTOLINE, line, 0);
-
+        ::SendMessage(curScintilla, SCI_GOTOLINE, 0, 0);
         ::SendMessage(curScintilla, SCI_ENDUNDOACTION, 0, 0);
     }
 }
 
-void UpdateAgesCommand()
-{
-}
-
 void UpdateLineBalancesCommand()
 {
+    //var regexBalance = new Regex(@"^(?<prefix>\??)(?<balance>\-?[0-9]+(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<eol>.*Balance.*)$");
+    //var regexTransaction = new Regex(@"^(?<prefix>\?*)(?<balance>-?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<suffix>\??) *(?<transall>(?>\(|\[|\\\[)(?<transamount>(?>\-|\+)?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?).*?(?>\)|\]|\\\]))(?<eol>.*)$");
+
+    //int lineCount = editor.GetLineCount();
+    //if (lineCount > 0)
+    //{
+    //    editor.BeginUndoAction();
+    //    decimal? currentBalance = null;
+    //    for (int lineNumber = lineCount - 1; lineNumber >= 0; lineNumber--)
+    //    {
+    //        editor.GotoLine(lineNumber);
+    //        string line = editor.GetLine(lineNumber);
+    //        if (line.Trim().Length > 0)
+    //        {
+    //            if (line.StartsWith("* * *"))
+    //            {
+    //                currentBalance = null;
+    //            }
+    //            else
+    //            {
+    //                MatchCollection matches = regexBalance.Matches(line);
+    //                if (matches.Count > 0)
+    //                {
+    //                    if (decimal.TryParse(regexBalance.Replace(line, "${balance}"), out var balance))
+    //                    {
+    //                        currentBalance = balance;
+    //                    }
+    //                }
+
+    //                if (currentBalance.HasValue)
+    //                {
+    //                    matches = regexTransaction.Matches(line);
+    //                    if (matches.Count > 0)
+    //                    {
+    //                        if (decimal.TryParse(regexTransaction.Replace(line, "${transamount}"), out var transAmount))
+    //                        {
+    //                            currentBalance = currentBalance + transAmount;
+    //                            string newBalanceString = currentBalance.Value.ToString("N2");
+    //                            string oldBalanceString = regexTransaction.Replace(line, "${balance}");
+    //                            if (!string.Equals(oldBalanceString, newBalanceString))
+    //                            {
+    //                                string newLine = regexTransaction.Replace(line, "${prefix}" + newBalanceString + "${suffix} ${transall}${eol}");
+    //                                editor.SelectCurrentLine();
+    //                                editor.ReplaceSel(newLine);
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //    editor.GotoLine(0);
+    //    editor.EndUndoAction();
+    //}
 }
 
 void GoToPluginCommunicationGuide()
