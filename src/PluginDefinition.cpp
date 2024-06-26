@@ -97,7 +97,7 @@ void commandMenuCleanUp()
 	// delete funcItem[4]._pShKey;
 }
 
-HWND GetScintillaHandle()
+static HWND GetScintillaHandle()
 {
     int which = -1;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
@@ -161,7 +161,7 @@ void UpdateAgesCommand()
 
         std::time_t t = std::time(nullptr);
         int currentYear = 1900 + std::localtime(&t)->tm_year;
-        std::regex regex("^(\\d{2}\\/.{2}\\/(\\d{4}).*)\\(\\d+ in \\d{4}\\)(.*)$");
+        std::regex regex(" +$|^(\\d{2}\\/.{2}\\/(\\d{4}).*)\\(\\d+ in \\d{4}\\)(.*)$");
         std::smatch match;
         int age;
         std::string lineFormat;
