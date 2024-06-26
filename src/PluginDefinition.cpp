@@ -161,7 +161,7 @@ void UpdateAgesCommand()
 
         std::time_t t = std::time(nullptr);
         int currentYear = 1900 + std::localtime(&t)->tm_year;
-        std::regex regex(" +$|^(\\d{2}\\/.{2}\\/(\\d{4}).*)\\(\\d+ in \\d{4}\\)(.*)$");
+        std::regex regex("^(\\d{2}\\/.{2}\\/(\\d{4}).*)\\(\\d+ in \\d{4}\\)(.*)$");
         std::smatch match;
         int age;
         std::string lineFormat;
@@ -177,11 +177,19 @@ void UpdateAgesCommand()
             ::SendMessage(curScintilla, SCI_SETTARGETRANGE, startPos, endPos);
             ::SendMessage(curScintilla, SCI_GETTARGETTEXT, 0, reinterpret_cast<LPARAM>(currentLine.data()));
 
-            if (std::regex_search(currentLine, match, regex))
+            newLine = currentLine;
+
+            if (std::regex_search(newLine, match, regex))
             {
                 age = currentYear - std::stoi(match.str(2));
                 lineFormat.assign("$1(").append(std::to_string(age)).append(" in ").append(std::to_string(currentYear)).append(")$3");
-                newLine = std::regex_replace(currentLine, regex, lineFormat);
+                newLine = std::regex_replace(newLine, regex, lineFormat);
+            }
+
+            newLine = std::regex_replace(newLine, std::regex(" +$|(\\S+)"), "$1");
+
+            if (currentLine.compare(newLine) != 0)
+            {
                 ::SendMessage(curScintilla, SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(newLine.data()));
             }
         }
