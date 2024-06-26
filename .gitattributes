@@ -5,6 +5,7 @@
 *.snk binary
 *.exe binary
 
+*.aps binary
 *.dll binary
 *.png binary
 *.jpg binary
