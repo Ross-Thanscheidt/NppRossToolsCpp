@@ -201,60 +201,98 @@ void UpdateAgesCommand()
 
 void UpdateLineBalancesCommand()
 {
-    //var regexBalance = new Regex(@"^(?<prefix>\??)(?<balance>\-?[0-9]+(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<eol>.*Balance.*)$");
-    //var regexTransaction = new Regex(@"^(?<prefix>\?*)(?<balance>-?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<suffix>\??) *(?<transall>(?>\(|\[|\\\[)(?<transamount>(?>\-|\+)?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?).*?(?>\)|\]|\\\]))(?<eol>.*)$");
+    HWND curScintilla = GetScintillaHandle();
 
-    //int lineCount = editor.GetLineCount();
-    //if (lineCount > 0)
-    //{
-    //    editor.BeginUndoAction();
-    //    decimal? currentBalance = null;
-    //    for (int lineNumber = lineCount - 1; lineNumber >= 0; lineNumber--)
-    //    {
-    //        editor.GotoLine(lineNumber);
-    //        string line = editor.GetLine(lineNumber);
-    //        if (line.Trim().Length > 0)
-    //        {
-    //            if (line.StartsWith("* * *"))
-    //            {
-    //                currentBalance = null;
-    //            }
-    //            else
-    //            {
-    //                MatchCollection matches = regexBalance.Matches(line);
-    //                if (matches.Count > 0)
-    //                {
-    //                    if (decimal.TryParse(regexBalance.Replace(line, "${balance}"), out var balance))
-    //                    {
-    //                        currentBalance = balance;
-    //                    }
-    //                }
+    if (curScintilla == 0)
+        return;
 
-    //                if (currentBalance.HasValue)
-    //                {
-    //                    matches = regexTransaction.Matches(line);
-    //                    if (matches.Count > 0)
-    //                    {
-    //                        if (decimal.TryParse(regexTransaction.Replace(line, "${transamount}"), out var transAmount))
-    //                        {
-    //                            currentBalance = currentBalance + transAmount;
-    //                            string newBalanceString = currentBalance.Value.ToString("N2");
-    //                            string oldBalanceString = regexTransaction.Replace(line, "${balance}");
-    //                            if (!string.Equals(oldBalanceString, newBalanceString))
-    //                            {
-    //                                string newLine = regexTransaction.Replace(line, "${prefix}" + newBalanceString + "${suffix} ${transall}${eol}");
-    //                                editor.SelectCurrentLine();
-    //                                editor.ReplaceSel(newLine);
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //    editor.GotoLine(0);
-    //    editor.EndUndoAction();
-    //}
+    int lineCount = (int)::SendMessage(curScintilla, SCI_GETLINECOUNT, 0, 0);
+
+    if (lineCount > 0)
+    {
+        Sci_Position startPos;
+        Sci_Position endPos;
+        std::string currentLine = "";
+        std::string newLine = "";
+
+        std::regex regex("^(\\d{2}\\/.{2}\\/(\\d{4}).*)\\(\\d+ in \\d{4}\\)(.*)$");
+        //var regexBalance = new Regex(@"^(?<prefix>\??)(?<balance>\-?[0-9]+(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<eol>.*Balance.*)$");
+        // prefix=$1, balance=$2, eol=$5
+        std::regex regexBalance("^(\\??)(\\-?[0-9]+(,?[0-9]{3})*(\\.[0-9]{0,2})?)(.*Balance.*)$");
+        //var regexTransaction = new Regex(@"^(?<prefix>\?*)(?<balance>-?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<suffix>\??) *(?<transall>(?>\(|\[|\\\[)(?<transamount>(?>\-|\+)?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?).*?(?>\)|\]|\\\]))(?<eol>.*)$");
+        // prefix=$1, balance=$2, suffix=$5, transall=$6, transamount=$8, eol=$13
+        // ?63.28? (-25.32) 06/03 Hobby Lobby
+        // 0:[63.28 (-25.32) 06/03 Hobby Lobby] 1:[?] 2:[63.28] 3:[] 4:[.28] 5:[?] 6:[(-25.32)] 7:[(] 8:[-25.32] 9:[-] 10:[] 11:[.32] 12:[)] 13:[ 06/03 Hobby Lobby]
+        std::regex regexTransaction("^(\\?*)(-?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?)(\\??) *((\\(|\\[|\\\\\\[)((\\-|\\+)?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?).*?(\\)|\\]|\\\\\\]))(.*)$");
+        std::smatch match;
+        std::string lineFormat;
+        int* currentBalance = nullptr;
+
+        ::SendMessage(curScintilla, SCI_BEGINUNDOACTION, 0, 0);
+
+        for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
+        {
+            startPos = (Sci_Position)::SendMessage(curScintilla, SCI_POSITIONFROMLINE, lineNumber, 0);
+            endPos = (Sci_Position)::SendMessage(curScintilla, SCI_GETLINEENDPOSITION, lineNumber, 0);
+
+            currentLine.resize(endPos - startPos);
+            ::SendMessage(curScintilla, SCI_SETTARGETRANGE, startPos, endPos);
+            ::SendMessage(curScintilla, SCI_GETTARGETTEXT, 0, reinterpret_cast<LPARAM>(currentLine.data()));
+
+            newLine = std::regex_replace(currentLine, std::regex(" +$|(\\S+)"), "$1");
+
+            if (newLine.length() > 0)
+            {
+                //            if (line.StartsWith("* * *"))
+                //            {
+                //                currentBalance = null;
+                //            }
+                //            else
+                //            {
+                //                MatchCollection matches = regexBalance.Matches(line);
+                //                if (matches.Count > 0)
+                //                {
+                //                    if (decimal.TryParse(regexBalance.Replace(line, "${balance}"), out var balance))
+                //                    {
+                //                        currentBalance = balance;
+                //                    }
+                //                }
+
+                //                if (currentBalance.HasValue)
+                //                {
+                //                    matches = regexTransaction.Matches(line);
+                //                    if (matches.Count > 0)
+                //                    {
+                //                        if (decimal.TryParse(regexTransaction.Replace(line, "${transamount}"), out var transAmount))
+                //                        {
+                //                            currentBalance = currentBalance + transAmount;
+                //                            string newBalanceString = currentBalance.Value.ToString("N2");
+                //                            string oldBalanceString = regexTransaction.Replace(line, "${balance}");
+                //                            if (!string.Equals(oldBalanceString, newBalanceString))
+                //                            {
+                //                                string newLine = regexTransaction.Replace(line, "${prefix}" + newBalanceString + "${suffix} ${transall}${eol}");
+                //                            }
+                //                        }
+                //                    }
+                //                }
+                //            }
+            }
+
+            if (std::regex_search(newLine, match, regex))
+            {
+                //lineFormat.assign("$1(").append(std::to_string(age)).append(" in ").append(std::to_string(currentYear)).append(")$3");
+                newLine = std::regex_replace(newLine, regex, lineFormat);
+            }
+
+            if (currentLine.compare(newLine) != 0)
+            {
+                ::SendMessage(curScintilla, SCI_REPLACETARGET, static_cast<WPARAM>(-1), reinterpret_cast<LPARAM>(newLine.data()));
+            }
+        }
+
+        ::SendMessage(curScintilla, SCI_GOTOLINE, 0, 0);
+        ::SendMessage(curScintilla, SCI_ENDUNDOACTION, 0, 0);
+    }
 }
 
 void GoToPluginCommunicationGuide()
