@@ -23,7 +23,7 @@
 //
 #include "PluginInterface.h"
 
-const TCHAR NPP_PLUGIN_NAME[] = TEXT("Ross Tools (C++)");
+const TCHAR NPP_PLUGIN_NAME[] = TEXT("Ross Tools");
 
 //
 // Here define the number of your plugin commands
