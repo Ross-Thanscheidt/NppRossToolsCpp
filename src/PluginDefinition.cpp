@@ -26,9 +26,9 @@
 #include <optional>
 #include <regex>
 #include <shlwapi.h>
-#include <sstream>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
 #include <time.h>
 
 
@@ -107,6 +107,40 @@ static HWND GetScintillaHandle()
     int which = -1;
     ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
     return which == -1 ? 0 : which == 0 ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
+}
+
+static int ParseAmount(std::string amountString)
+{
+    if (amountString.find('.') == std::string::npos)
+    {
+        amountString.append(".00");
+    }
+    else
+    {
+        while (amountString.length() < 3 || amountString[amountString.length() - 3] != '.')
+        {
+            amountString.append("0");
+        }
+    }
+
+    amountString.erase(amountString.length() - 3, 1);
+
+    return stoi(amountString);
+}
+
+static std::string FormatAmount(int amount)
+{
+    std::string result;
+    std::stringstream ssDollars;
+    std::stringstream ssCents;
+
+    ssDollars << (amount / 100);
+
+    ssCents << std::setw(2) << std::setfill('0') << (amount % 100);
+
+    result = ssDollars.str().append(".").append(ssCents.str());
+
+    return result;
 }
 
 void RemoveTrailingSpacesCommand()
@@ -232,9 +266,6 @@ void UpdateLineBalancesCommand()
         std::smatch match;
         std::string lineFormat;
         std::optional<int> currentBalance;
-        std::stringstream formatAmount;
-        formatAmount.imbue(std::locale("en-US.UTF-8"));
-        formatAmount << std::fixed << std::showpoint << std::setprecision(2);
 
         ::SendMessage(curScintilla, SCI_BEGINUNDOACTION, 0, 0);
 
@@ -254,59 +285,37 @@ void UpdateLineBalancesCommand()
                 if (std::regex_search(newLine, std::regex("^\\* \\* \\*")))
                 {
                     currentBalance.reset();
+
                     newLine.append(" currentBalance=reset");
                 }
                 else if (std::regex_search(newLine, match, regexBalance))
                 {
-                    std::string balance(match[2]);
+                    int balance = ParseAmount(match[2]);
+                    currentBalance = balance;
 
-                    if (balance.find('.') == std::string::npos)
-                    {
-                        balance.append(".00");
-                    }
-                    else
-                    {
-                        while (balance.length() < 3 || balance[balance.length() - 3] != '.')
-                        {
-                            balance.append("0");
-                        }
-                    }
-
-                    balance.erase(balance.length() - 3, 1);
-
-                    currentBalance = stoi(balance);
+                    newLine.append(" balance=").append(std::to_string(balance));
                 }
                 else if (currentBalance.has_value() && std::regex_search(newLine, match, regexTransaction))
                 {
-                    std::string oldBalanceString = std::regex_replace(newLine, regexTransaction, "$2");
+                    std::string oldBalanceString = match[2];
 
-                    std::string transAmount(match[7]);
-
-                    if (transAmount.find('.') == std::string::npos)
-                    {
-                        transAmount.append(".00");
-                    }
-                    else
-                    {
-                        while (transAmount.length() < 3 || transAmount[transAmount.length() - 3] != '.')
-                        {
-                            transAmount.append("0");
-                        }
-                    }
-
-                    transAmount.erase(transAmount.length() - 3, 1);
-
-                    currentBalance = currentBalance.value() + stoi(transAmount);
-
-                    formatAmount.str(std::string());
-                    formatAmount << static_cast<float>(currentBalance.value()) / 100.0;
-                    std::string newBalanceString(formatAmount.str());
+                    int transAmount = ParseAmount(match[7]);
+                    currentBalance = currentBalance.value() + transAmount;
+                    std::string newBalanceString = FormatAmount(currentBalance.value());
                     
                     if (oldBalanceString.compare(newBalanceString) != 0)
                     {
-                        lineFormat.assign("$1").append(newBalanceString).append(" $5$12");
+                        // $1 is option '?' prefix, $5 is '(transAmount)', $12 is rest of line after transAmount
+                        lineFormat.assign("$1").append("{newBalanceString}").append(" $5$12");
                         newLine = std::regex_replace(newLine, regexTransaction, lineFormat);
+                        newLine = std::regex_replace(newLine, std::regex("\\{newBalanceString\\}"), newBalanceString);
                     }
+
+                    newLine
+                        .append(" oldBalanceString=").append(oldBalanceString)
+                        .append(", transAmount=").append(std::to_string(transAmount))
+                        .append(", currentBalance=").append(std::to_string(currentBalance.value()))
+                        .append(", newBalanceString=").append(newBalanceString);
                 }
             }
 
