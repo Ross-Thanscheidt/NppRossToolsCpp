@@ -21,11 +21,16 @@
 //
 // put the headers you need here
 //
-#include <stdlib.h>
-#include <time.h>
-#include <shlwapi.h>
-#include <string>
+#include <iomanip>
+#include <locale>
+#include <optional>
 #include <regex>
+#include <shlwapi.h>
+#include <sstream>
+#include <stdlib.h>
+#include <string>
+#include <time.h>
+
 
 const TCHAR sectionName[] = TEXT("NppRossToolsCpp");
 const TCHAR keyName[] = TEXT("doCloseTag");
@@ -181,7 +186,7 @@ void UpdateAgesCommand()
 
             if (std::regex_search(newLine, match, regex))
             {
-                age = currentYear - std::stoi(match.str(2));
+                age = currentYear - std::stoi(match[2]);
                 lineFormat.assign("$1(").append(std::to_string(age)).append(" in ").append(std::to_string(currentYear)).append(")$3");
                 newLine = std::regex_replace(newLine, regex, lineFormat);
             }
@@ -220,17 +225,20 @@ void UpdateLineBalancesCommand()
         // prefix=$1, balance=$2, eol=$5
         std::regex regexBalance("^(\\??)(\\-?[0-9]+(,?[0-9]{3})*(\\.[0-9]{0,2})?)(.*Balance.*)$");
         //var regexTransaction = new Regex(@"^(?<prefix>\?*)(?<balance>-?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<suffix>\??) *(?<transall>(?>\(|\[|\\\[)(?<transamount>(?>\-|\+)?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?).*?(?>\)|\]|\\\]))(?<eol>.*)$");
-        // prefix=$1, balance=$2, suffix=$5, transall=$6, transamount=$8, eol=$13
+        // prefix=$1, balance=$2, transall=$5, transamount=$7, suffix=$8, eol=$13
         // ?63.28? (-25.32) 06/03 Hobby Lobby
         // 0:[63.28 (-25.32) 06/03 Hobby Lobby] 1:[?] 2:[63.28] 3:[] 4:[.28] 5:[?] 6:[(-25.32)] 7:[(] 8:[-25.32] 9:[-] 10:[] 11:[.32] 12:[)] 13:[ 06/03 Hobby Lobby]
-        std::regex regexTransaction("^(\\?*)(-?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?)(\\??) *((\\(|\\[|\\\\\\[)((\\-|\\+)?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?).*?(\\)|\\]|\\\\\\]))(.*)$");
+        std::regex regexTransaction("^(\\?*)(-?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?) *((\\(|\\[|\\\\\\[)((\\-|\\+)?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?).*(\\)|\\]|\\\\\\]))(.*)$");
         std::smatch match;
         std::string lineFormat;
-        int* currentBalance = nullptr;
+        std::optional<int> currentBalance;
+        std::stringstream formatAmount;
+        formatAmount.imbue(std::locale("en-US.UTF-8"));
+        formatAmount << std::fixed << std::showpoint << std::setprecision(2);
 
         ::SendMessage(curScintilla, SCI_BEGINUNDOACTION, 0, 0);
 
-        for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
+        for (int lineNumber = lineCount - 1; lineNumber >= 0; lineNumber--)
         {
             startPos = (Sci_Position)::SendMessage(curScintilla, SCI_POSITIONFROMLINE, lineNumber, 0);
             endPos = (Sci_Position)::SendMessage(curScintilla, SCI_GETLINEENDPOSITION, lineNumber, 0);
@@ -243,45 +251,63 @@ void UpdateLineBalancesCommand()
 
             if (newLine.length() > 0)
             {
-                //            if (line.StartsWith("* * *"))
-                //            {
-                //                currentBalance = null;
-                //            }
-                //            else
-                //            {
-                //                MatchCollection matches = regexBalance.Matches(line);
-                //                if (matches.Count > 0)
-                //                {
-                //                    if (decimal.TryParse(regexBalance.Replace(line, "${balance}"), out var balance))
-                //                    {
-                //                        currentBalance = balance;
-                //                    }
-                //                }
+                if (std::regex_search(newLine, std::regex("^\\* \\* \\*")))
+                {
+                    currentBalance.reset();
+                    newLine.append(" currentBalance=reset");
+                }
+                else if (std::regex_search(newLine, match, regexBalance))
+                {
+                    std::string balance(match[2]);
 
-                //                if (currentBalance.HasValue)
-                //                {
-                //                    matches = regexTransaction.Matches(line);
-                //                    if (matches.Count > 0)
-                //                    {
-                //                        if (decimal.TryParse(regexTransaction.Replace(line, "${transamount}"), out var transAmount))
-                //                        {
-                //                            currentBalance = currentBalance + transAmount;
-                //                            string newBalanceString = currentBalance.Value.ToString("N2");
-                //                            string oldBalanceString = regexTransaction.Replace(line, "${balance}");
-                //                            if (!string.Equals(oldBalanceString, newBalanceString))
-                //                            {
-                //                                string newLine = regexTransaction.Replace(line, "${prefix}" + newBalanceString + "${suffix} ${transall}${eol}");
-                //                            }
-                //                        }
-                //                    }
-                //                }
-                //            }
-            }
+                    if (balance.find('.') == std::string::npos)
+                    {
+                        balance.append(".00");
+                    }
+                    else
+                    {
+                        while (balance.length() < 3 || balance[balance.length() - 3] != '.')
+                        {
+                            balance.append("0");
+                        }
+                    }
 
-            if (std::regex_search(newLine, match, regex))
-            {
-                //lineFormat.assign("$1(").append(std::to_string(age)).append(" in ").append(std::to_string(currentYear)).append(")$3");
-                newLine = std::regex_replace(newLine, regex, lineFormat);
+                    balance.erase(balance.length() - 3, 1);
+
+                    currentBalance = stoi(balance);
+                }
+                else if (currentBalance.has_value() && std::regex_search(newLine, match, regexTransaction))
+                {
+                    std::string oldBalanceString = std::regex_replace(newLine, regexTransaction, "$2");
+
+                    std::string transAmount(match[7]);
+
+                    if (transAmount.find('.') == std::string::npos)
+                    {
+                        transAmount.append(".00");
+                    }
+                    else
+                    {
+                        while (transAmount.length() < 3 || transAmount[transAmount.length() - 3] != '.')
+                        {
+                            transAmount.append("0");
+                        }
+                    }
+
+                    transAmount.erase(transAmount.length() - 3, 1);
+
+                    currentBalance = currentBalance.value() + stoi(transAmount);
+
+                    formatAmount.str(std::string());
+                    formatAmount << static_cast<float>(currentBalance.value()) / 100.0;
+                    std::string newBalanceString(formatAmount.str());
+                    
+                    if (oldBalanceString.compare(newBalanceString) != 0)
+                    {
+                        lineFormat.assign("$1").append(newBalanceString).append(" $5$12");
+                        newLine = std::regex_replace(newLine, regexTransaction, lineFormat);
+                    }
+                }
             }
 
             if (currentLine.compare(newLine) != 0)
@@ -308,7 +334,7 @@ void GoToPluginRepo()
 //
 // This function help you to initialize your plugin commands
 //
-bool setCommand(size_t index, TCHAR* cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey* sk, bool check0nInit)
+bool setCommand(size_t index, const TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey* sk, bool check0nInit)
 {
     if (index >= nbFunc)
         return false;
