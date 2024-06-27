@@ -65,7 +65,7 @@
   | Application | Version |
   | :--- | :--- |
   | Visual Studio 2022 Preview | v17.11 Preview 2.1 |
-  | Notepad++ | v8.6.7 (64-bit) |
+  | Notepad++ | v8.6.8 (64-bit) |
 
 - Build the project in Visual Studio to create `NppRossToolsCpp.dll` 
 
