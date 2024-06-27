@@ -94,8 +94,7 @@ void commandMenuInit()
 
 	setCommand(3, TEXT("---"), NULL, NULL, false);
 
-	setCommand(4, TEXT("Plugin Communication Guide"), GoToPluginCommunicationGuide, NULL, false);
-	setCommand(5, TEXT("Plugin Source Code"), GoToPluginRepo, NULL, false);
+	setCommand(4, TEXT("Plugin Source Code"), GoToPluginRepo, NULL, false);
 }
 
 void commandMenuCleanUp()
@@ -339,11 +338,6 @@ void UpdateLineBalancesCommand()
         ::SendMessage(curScintilla, SCI_GOTOLINE, 0, 0);
         ::SendMessage(curScintilla, SCI_ENDUNDOACTION, 0, 0);
     }
-}
-
-void GoToPluginCommunicationGuide()
-{
-	::ShellExecute(NULL, TEXT("open"), TEXT("https://npp-user-manual.org/docs/plugin-communication/"), NULL, NULL, SW_SHOWNORMAL);
 }
 
 void GoToPluginRepo()

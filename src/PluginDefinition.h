@@ -65,7 +65,6 @@ bool setCommand(size_t index, const TCHAR *cmdName, PFUNCPLUGINCMD pFunc, Shortc
 void RemoveTrailingSpacesCommand();
 void UpdateAgesCommand();
 void UpdateLineBalancesCommand();
-void GoToPluginCommunicationGuide();
 void GoToPluginRepo();
 
 #endif //PLUGINDEFINITION_H
