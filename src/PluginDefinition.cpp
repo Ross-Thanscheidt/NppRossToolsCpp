@@ -30,7 +30,7 @@
 #include <string>
 #include <sstream>
 #include <time.h>
-
+#include <algorithm>
 
 const TCHAR sectionName[] = TEXT("NppRossToolsCpp");
 const TCHAR keyName[] = TEXT("doCloseTag");
@@ -42,13 +42,15 @@ const TCHAR configFileName[] = TEXT("NppRossToolsCpp.ini");
 	#define generic_itoa itoa
 #endif
 
+#define REQUIRED_CURRENCY_REGEX "((\\-|\\+)?[0-9]+(,?[0-9]{3})*(\\.[0-9]{0,2})?)"
+#define OPTIONAL_CURRENCY_REGEX "((\\-|\\+)?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?)"
+
 FuncItem funcItem[nbFunc];
 
 //
 // The data of Notepad++ that you can use in your plugin commands
 //
 NppData nppData;
-
 
 TCHAR iniFilePath[MAX_PATH];
 
@@ -109,8 +111,12 @@ static HWND GetScintillaHandle()
     return which == -1 ? 0 : which == 0 ? nppData._scintillaMainHandle : nppData._scintillaSecondHandle;
 }
 
+// ParseAmount will remove all commas, add ".##" to the end if missing, and store currency as an int with an implied 2 decimal points.
+// ParseAmount presumes that the amount passed in will only be those that matched a regex with "", ".", ".#", or ".##" at the end of the string.
 static int ParseAmount(std::string amountString)
 {
+    amountString.erase(std::remove(amountString.begin(), amountString.end(), ','), amountString.end());
+
     if (amountString.find('.') == std::string::npos)
     {
         amountString.append(".00");
@@ -128,21 +134,22 @@ static int ParseAmount(std::string amountString)
     return stoi(amountString);
 }
 
+// Given an amount as an int representing currency with an implied 2 decimal places,
+// format as a string with commas for thousands separators and always 2 decimal places.
 static std::string FormatAmount(int amount)
 {
-    std::string result;
     std::stringstream ssDollars;
     std::stringstream ssCents;
 
+    ssDollars.imbue(std::locale("en-US.UTF-8"));
     ssDollars << (amount / 100);
 
     ssCents << std::setw(2) << std::setfill('0') << (amount % 100);
 
-    result = ssDollars.str().append(".").append(ssCents.str());
-
-    return result;
+    return ssDollars.str().append(".").append(ssCents.str());
 }
 
+// Remove all trailing spaces at the end of every line in the current document.
 void RemoveTrailingSpacesCommand()
 {
     HWND curScintilla = GetScintillaHandle();
@@ -182,6 +189,9 @@ void RemoveTrailingSpacesCommand()
     }
 }
 
+// Update the age and year on every line of the current document that starts with a date and has (# in yyyy) later on the line:
+//   mm/dd/yyyy <anything> (# in yyyy) <anything>
+// Also remove all trailing spaces at the end of every line in the current document.
 void UpdateAgesCommand()
 {
     HWND curScintilla = GetScintillaHandle();
@@ -238,6 +248,18 @@ void UpdateAgesCommand()
     }
 }
 
+// Starting at the bottom of the current document and moving up, find starting balances and update the current balance on each transaction line.
+// A line that starts with "#.## Balance" will reset the current balance to that amount:
+// [?]<balance><restOfLine> where <restOfLine> has "Balance" in it somewhere
+// A line with this format is considered a transaction line and its current balance will be inserted or updated if it has a balance line below it
+// (the current balance will depend on the starting balance line below and any transaction lines between the balance line and the current transaction line)
+// [?][<balance>] ([<sign>]<transAmount>[?])<restOfLine>
+// Where the first ? is optional and typically indicates uncertainty or a bill that hasn't been paid yet
+// Where the <currentBalance> may or may not be there, and the calculated <currentBalance> will be inserted (or updated if it is already there)
+// Where the <sign> for the <transAmount> can be +, -, or not specified (implies +)
+// Where the ? after <transAmount> is optional and typically indicates that <transAmount> is an estimate for now
+// Where a line that starts with "* * *" is considered a section break, where each section can have its own starting balance line and transaction lines
+// (this is useful for updating a note in Joplin - see joplinapp.org)
 void UpdateLineBalancesCommand()
 {
     HWND curScintilla = GetScintillaHandle();
@@ -254,15 +276,14 @@ void UpdateLineBalancesCommand()
         std::string currentLine = "";
         std::string newLine = "";
 
-        std::regex regex("^(\\d{2}\\/.{2}\\/(\\d{4}).*)\\(\\d+ in \\d{4}\\)(.*)$");
-        //var regexBalance = new Regex(@"^(?<prefix>\??)(?<balance>\-?[0-9]+(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<eol>.*Balance.*)$");
-        // prefix=$1, balance=$2, eol=$5
-        std::regex regexBalance("^(\\??)(\\-?[0-9]+(,?[0-9]{3})*(\\.[0-9]{0,2})?)(.*Balance.*)$");
-        //var regexTransaction = new Regex(@"^(?<prefix>\?*)(?<balance>-?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?)(?<suffix>\??) *(?<transall>(?>\(|\[|\\\[)(?<transamount>(?>\-|\+)?[0-9]*(?>,?[0-9]{3})*(?>\.[0-9]{0,2})?).*?(?>\)|\]|\\\]))(?<eol>.*)$");
-        // prefix=$1, balance=$2, transall=$5, transamount=$7, suffix=$8, eol=$13
-        // ?63.28? (-25.32) 06/03 Hobby Lobby
-        // 0:[63.28 (-25.32) 06/03 Hobby Lobby] 1:[?] 2:[63.28] 3:[] 4:[.28] 5:[?] 6:[(-25.32)] 7:[(] 8:[-25.32] 9:[-] 10:[] 11:[.32] 12:[)] 13:[ 06/03 Hobby Lobby]
-        std::regex regexTransaction("^(\\?*)(-?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?) *((\\(|\\[|\\\\\\[)((\\-|\\+)?[0-9]*(,?[0-9]{3})*(\\.[0-9]{0,2})?).*(\\)|\\]|\\\\\\]))(.*)$");
+        // Format: [?]<balance><restOfLine> where <restOfLine> has "Balance" in it somewhere
+        // <prefix>=$1, <balance>=$2, <restOfLine>=$6
+        std::regex regexBalance("^(\\??)" REQUIRED_CURRENCY_REGEX "(.+Balance.*)$");
+        
+        // Format: [?][<balance>] ([<sign>]<transAmount>[?])<restOfLine>
+        // <prefix>=$1, <balance>=$2, <transAmountInParentheses>=$6 <transAmount>=$8 <restOfLine>=$13
+        std::regex regexTransaction("^(\\?*)" OPTIONAL_CURRENCY_REGEX " *((\\(|\\[|\\\\\\[)" REQUIRED_CURRENCY_REGEX ".*(\\)|\\]|\\\\\\]))(.*)$");
+        
         std::smatch match;
         std::string lineFormat;
         std::optional<int> currentBalance;
@@ -285,37 +306,27 @@ void UpdateLineBalancesCommand()
                 if (std::regex_search(newLine, std::regex("^\\* \\* \\*")))
                 {
                     currentBalance.reset();
-
-                    newLine.append(" currentBalance=reset");
                 }
                 else if (std::regex_search(newLine, match, regexBalance))
                 {
                     int balance = ParseAmount(match[2]);
                     currentBalance = balance;
-
-                    newLine.append(" balance=").append(std::to_string(balance));
                 }
                 else if (currentBalance.has_value() && std::regex_search(newLine, match, regexTransaction))
                 {
                     std::string oldBalanceString = match[2];
 
-                    int transAmount = ParseAmount(match[7]);
+                    int transAmount = ParseAmount(match[8]);
                     currentBalance = currentBalance.value() + transAmount;
                     std::string newBalanceString = FormatAmount(currentBalance.value());
                     
                     if (oldBalanceString.compare(newBalanceString) != 0)
                     {
-                        // $1 is option '?' prefix, $5 is '(transAmount)', $12 is rest of line after transAmount
-                        lineFormat.assign("$1").append("{newBalanceString}").append(" $5$12");
+                        // $1 is optional '?' prefix, $6 is '(transAmount)', $13 is rest of line after transAmount
+                        lineFormat.assign("$1").append("{newBalanceString}").append(" $6$13");
                         newLine = std::regex_replace(newLine, regexTransaction, lineFormat);
                         newLine = std::regex_replace(newLine, std::regex("\\{newBalanceString\\}"), newBalanceString);
                     }
-
-                    newLine
-                        .append(" oldBalanceString=").append(oldBalanceString)
-                        .append(", transAmount=").append(std::to_string(transAmount))
-                        .append(", currentBalance=").append(std::to_string(currentBalance.value()))
-                        .append(", newBalanceString=").append(newBalanceString);
                 }
             }
 
