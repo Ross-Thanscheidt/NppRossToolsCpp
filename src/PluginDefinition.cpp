@@ -248,8 +248,10 @@ void UpdateAgesCommand()
 }
 
 // Starting at the bottom of the current document and moving up, find starting balances and update the current balance on each transaction line.
+//
 // A line that starts with "#.## Balance" will reset the current balance to that amount:
 // [?]<balance><restOfLine> where <restOfLine> has "Balance" in it somewhere
+//
 // A line with this format is considered a transaction line and its current balance will be inserted or updated if it has a balance line below it
 // (the current balance will depend on the starting balance line below and any transaction lines between the balance line and the current transaction line)
 // [?][<balance>] ([<sign>]<transAmount>[?])<restOfLine>
@@ -257,8 +259,9 @@ void UpdateAgesCommand()
 // Where the <currentBalance> may or may not be there, and the calculated <currentBalance> will be inserted (or updated if it is already there)
 // Where the <sign> for the <transAmount> can be +, -, or not specified (implies +)
 // Where the ? after <transAmount> is optional and typically indicates that <transAmount> is an estimate for now
-// Where a line that starts with "* * *" is considered a section break, where each section can have its own starting balance line and transaction lines
-// (this is useful for updating a note in Joplin - see joplinapp.org)
+// 
+// A line that starts with "* * *" is considered a section break, where each section can have its own starting balance line and transaction lines
+// (this is useful for updating a note in Joplin - see joplinapp.org - where Notepad++ can be used as an external editor)
 void UpdateLineBalancesCommand()
 {
     HWND curScintilla = GetScintillaHandle();
