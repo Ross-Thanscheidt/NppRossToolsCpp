@@ -7,6 +7,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NppRossToolsCpp", "vs.proj\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3EB91204-BE8B-4A99-9C2F-D2DCD2FCBF3D}"
 	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		license.txt = license.txt
 		README.md = README.md
 	EndProjectSection
 EndProject
