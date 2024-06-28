@@ -143,7 +143,7 @@ static std::string FormatAmount(int amount)
     ssDollars.imbue(std::locale("en-US.UTF-8"));
     ssDollars << (amount / 100);
 
-    ssCents << std::setw(2) << std::setfill('0') << (amount % 100);
+    ssCents << std::setw(2) << std::setfill('0') << (abs(amount) % 100);
 
     return ssDollars.str().append(".").append(ssCents.str());
 }
