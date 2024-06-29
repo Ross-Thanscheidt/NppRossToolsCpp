@@ -137,8 +137,8 @@
     </Link>
     <PostBuildEvent>
       <Command>
-        xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
-      </Command>
+xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -163,8 +163,8 @@
     </Link>
     <PostBuildEvent>
       <Command>
-        xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
-      </Command>
+xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -192,10 +192,10 @@
     </Link>
     <PostBuildEvent>
       <Command>
-        xcopy /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
-        xcopy /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
-        xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
-      </Command>
+xcopy /-I /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
+xcopy /-I /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
+xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -223,10 +223,10 @@
     </Link>
     <PostBuildEvent>
       <Command>
-        xcopy /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
-        xcopy /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
-        xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
-      </Command>
+xcopy /-I /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
+xcopy /-I /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
+xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
