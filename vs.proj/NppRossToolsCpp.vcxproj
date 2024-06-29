@@ -137,7 +137,8 @@
     </Link>
     <PostBuildEvent>
       <Command>
-xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
+xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
+xcopy /I /R /Y /F "$(OutDir)*.pdb" "$(NppPluginsDir)$(SolutionName)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -163,7 +164,8 @@ xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
     </Link>
     <PostBuildEvent>
       <Command>
-xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
+xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
+xcopy /I /R /Y /F "$(OutDir)*.pdb" "$(NppPluginsDir)$(SolutionName)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -194,7 +196,8 @@ xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
       <Command>
 xcopy /-I /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
 xcopy /-I /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
-xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
+del /Q /F "$(NppPluginsDir)$(SolutionName)\*.pdb"
+xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -225,7 +228,8 @@ xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
       <Command>
 xcopy /-I /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
 xcopy /-I /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
-xcopy /I /R /Y /F "$(OutDir)" "$(NppPluginsDir)$(SolutionName)"
+del /Q /F "$(NppPluginsDir)$(SolutionName)\*.pdb"
+xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
