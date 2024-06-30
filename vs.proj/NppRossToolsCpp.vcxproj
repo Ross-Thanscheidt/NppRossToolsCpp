@@ -137,8 +137,8 @@
     </Link>
     <PostBuildEvent>
       <Command>
-xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
-xcopy /I /R /Y /F "$(OutDir)*.pdb" "$(NppPluginsDir)$(SolutionName)"
+xcopy /I /R /Y /F "$(OutDir)$(SolutionName).dll" "$(NppPluginsDir)$(SolutionName)\"
+xcopy /I /R /Y /F "$(OutDir)$(SolutionName).pdb" "$(NppPluginsDir)$(SolutionName)\"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -164,8 +164,8 @@ xcopy /I /R /Y /F "$(OutDir)*.pdb" "$(NppPluginsDir)$(SolutionName)"
     </Link>
     <PostBuildEvent>
       <Command>
-xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
-xcopy /I /R /Y /F "$(OutDir)*.pdb" "$(NppPluginsDir)$(SolutionName)"
+xcopy /I /R /Y /F "$(OutDir)$(SolutionName).dll" "$(NppPluginsDir)$(SolutionName)\"
+xcopy /I /R /Y /F "$(OutDir)$(SolutionName).pdb" "$(NppPluginsDir)$(SolutionName)\"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -196,8 +196,8 @@ xcopy /I /R /Y /F "$(OutDir)*.pdb" "$(NppPluginsDir)$(SolutionName)"
       <Command>
 xcopy /-I /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
 xcopy /-I /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
-del /Q /F "$(NppPluginsDir)$(SolutionName)\*.pdb"
-xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
+xcopy /I /R /Y /F "$(OutDir)$(SolutionName).dll" "$(NppPluginsDir)$(SolutionName)\"
+del /Q /F "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -228,8 +228,8 @@ xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
       <Command>
 xcopy /-I /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
 xcopy /-I /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
-del /Q /F "$(NppPluginsDir)$(SolutionName)\*.pdb"
-xcopy /I /R /Y /F "$(OutDir)*.dll" "$(NppPluginsDir)$(SolutionName)"
+xcopy /I /R /Y /F "$(OutDir)$(SolutionName).dll" "$(NppPluginsDir)$(SolutionName)\"
+del /Q /F "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
