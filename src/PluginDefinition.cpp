@@ -100,14 +100,19 @@ void commandMenuInit()
 	setCommand(2, TEXT("Update Line Balances"), UpdateLineBalancesCommand, shKey, false);
 
 	setCommand(3, TEXT("---"), NULL, NULL, false);
-
 	setCommand(4, TEXT("Plugin Source Code"), GoToPluginRepo, NULL, false);
 }
 
 void commandMenuCleanUp()
 {
-	// Don't forget to deallocate your shortcut here
-	delete funcItem[3]._pShKey;
+	// Deallocate shortcut keys
+    for (int index = 0; index < nbFunc; index++)
+    {
+        if (funcItem[index]._pShKey != NULL)
+        {
+            delete funcItem[index]._pShKey;
+        }
+    }
 }
 
 static HWND GetScintillaHandle()

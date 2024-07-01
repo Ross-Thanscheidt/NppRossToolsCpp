@@ -28,7 +28,7 @@ const TCHAR NPP_PLUGIN_NAME[] = TEXT("Ross Tools");
 //
 // Here define the number of your plugin commands
 //
-const int nbFunc = 6;
+const int nbFunc = 5;
 
 
 //
