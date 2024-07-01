@@ -90,7 +90,14 @@ void commandMenuInit()
     //            );
     setCommand(0, TEXT("Remove Trailing Spaces"), RemoveTrailingSpacesCommand, NULL, false);
     setCommand(1, TEXT("Update Ages"), UpdateAgesCommand, NULL, false);
-	setCommand(2, TEXT("Update Line Balances"), UpdateLineBalancesCommand, NULL, false);
+
+    ShortcutKey* shKey = new ShortcutKey;
+    shKey->_isAlt = true;
+    shKey->_isCtrl = false;
+    shKey->_isShift = false;
+    shKey->_key = 0x42; // VK_B
+
+	setCommand(2, TEXT("Update Line Balances"), UpdateLineBalancesCommand, shKey, false);
 
 	setCommand(3, TEXT("---"), NULL, NULL, false);
 
@@ -100,7 +107,7 @@ void commandMenuInit()
 void commandMenuCleanUp()
 {
 	// Don't forget to deallocate your shortcut here
-	// delete funcItem[4]._pShKey;
+	delete funcItem[3]._pShKey;
 }
 
 static HWND GetScintillaHandle()
