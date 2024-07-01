@@ -194,10 +194,10 @@ xcopy /I /R /Y /F "$(OutDir)$(SolutionName).pdb" "$(NppPluginsDir)$(SolutionName
     </Link>
     <PostBuildEvent>
       <Command>
-xcopy /-I /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
-xcopy /-I /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
+xcopy /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
+xcopy /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
 xcopy /I /R /Y /F "$(OutDir)$(SolutionName).dll" "$(NppPluginsDir)$(SolutionName)\"
-del /Q /F "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb"
+if exist "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb" del "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -226,10 +226,10 @@ del /Q /F "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb"
     </Link>
     <PostBuildEvent>
       <Command>
-xcopy /-I /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
-xcopy /-I /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
+xcopy /R /Y /F "$(SolutionDir)license.txt" "$(OutDir)license.txt"
+xcopy /R /Y /F "$(SolutionDir)README.md" "$(OutDir)README.md"
 xcopy /I /R /Y /F "$(OutDir)$(SolutionName).dll" "$(NppPluginsDir)$(SolutionName)\"
-del /Q /F "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb"
+if exist "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb" del "$(NppPluginsDir)$(SolutionName)\$(SolutionName).pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
