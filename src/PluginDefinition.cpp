@@ -62,6 +62,16 @@ void pluginCleanUp()
 {
 }
 
+static ShortcutKey* CreateShortcutKey(std::string modifiers, UCHAR key)
+{
+    ShortcutKey* shKey = new ShortcutKey;
+    shKey->_isAlt = std::regex_search(modifiers, std::regex("Alt", std::regex_constants::icase));
+    shKey->_isCtrl = std::regex_search(modifiers, std::regex("Ctl|Ctrl|Control", std::regex_constants::icase));
+    shKey->_isShift = std::regex_search(modifiers, std::regex("Shift", std::regex_constants::icase));
+    shKey->_key = key;
+    return shKey;
+}
+
 void commandMenuInit()
 {
 	//
@@ -90,17 +100,11 @@ void commandMenuInit()
     //            );
     setCommand(0, TEXT("Remove Trailing Spaces"), RemoveTrailingSpacesCommand, NULL, false);
     setCommand(1, TEXT("Update Ages"), UpdateAgesCommand, NULL, false);
-
-    ShortcutKey* shKey = new ShortcutKey;
-    shKey->_isAlt = true;
-    shKey->_isCtrl = false;
-    shKey->_isShift = false;
-    shKey->_key = 0x42; // VK_B
-
-	setCommand(2, TEXT("Update Line Balances"), UpdateLineBalancesCommand, shKey, false);
-
+	setCommand(2, TEXT("Update Line Balances"), UpdateLineBalancesCommand, CreateShortcutKey("Alt", 'B'), false);
 	setCommand(3, TEXT("---"), NULL, NULL, false);
 	setCommand(4, TEXT("Plugin Source Code"), GoToPluginRepo, NULL, false);
+
+    // Update the nbFunc constant in PluginDefinition.h if the highest index number changes (set to highest index + 1)
 }
 
 void commandMenuCleanUp()
