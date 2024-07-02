@@ -354,7 +354,6 @@ void UpdateLineBalancesCommand()
             }
         }
 
-        ::SendMessage(curScintilla, SCI_GOTOLINE, 0, 0);
         ::SendMessage(curScintilla, SCI_ENDUNDOACTION, 0, 0);
     }
 }
