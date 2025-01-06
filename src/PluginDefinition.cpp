@@ -296,7 +296,7 @@ void UpdateLineBalancesCommand()
 
         // Format: [?]<balance><restOfLine> where <restOfLine> has "Balance" in it somewhere
         // <prefix>=$1, <balance>=$2, <restOfLine>=$6
-        std::regex regexBalance("^(\\??)" REQUIRED_CURRENCY_REGEX "(.+Balance.*)$");
+        std::regex regexBalance("^(\\??)" REQUIRED_CURRENCY_REGEX "(\\s+Balance.*)$");
         
         // Format: [?][<balance>] ([<sign>]<transAmount>[?])<restOfLine>
         // <prefix>=$1, <balance>=$2, <transAmountInParentheses>=$6 <transAmount>=$8 <restOfLine>=$13
