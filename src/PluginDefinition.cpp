@@ -161,7 +161,14 @@ static std::string FormatAmount(int amount)
 
     ssCents << std::setw(2) << std::setfill('0') << (abs(amount) % 100);
 
-    return ssDollars.str().append(".").append(ssCents.str());
+    std::string ssResult = ssDollars.str().append(".").append(ssCents.str());
+
+    if (amount < 0 && amount > -100)
+    {
+        ssResult = "-" + ssResult;
+    }
+
+    return ssResult;
 }
 
 // Remove all trailing spaces at the end of every line in the current document.
